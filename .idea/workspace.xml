@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="98f6ec6c-01c0-4f9a-9455-db0d6f396c1e" name="Default Changelist" comment="" />
+    <list default="true" id="98f6ec6c-01c0-4f9a-9455-db0d6f396c1e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/data/fashion/t10k-images-idx3-ubyte.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/data/fashion/t10k-labels-idx1-ubyte.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/data/fashion/train-images-idx3-ubyte.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/data/fashion/train-labels-idx1-ubyte.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/data/mnist/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/utils/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/utils/argparser.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/utils/helper.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fashion-mnist/utils/mnist_reader.py" beforeDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -13,8 +23,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/neur.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="545">
-              <caret line="155" column="29" selection-start-line="155" selection-start-column="29" selection-end-line="155" selection-end-column="29" />
+            <state relative-caret-position="324">
+              <caret line="142" column="25" lean-forward="true" selection-start-line="142" selection-start-column="25" selection-end-line="142" selection-end-column="25" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -64,6 +74,11 @@
               <item name="mnist" type="b2602c69:ProjectViewProjectNode" />
               <item name="mnist" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="mnist" type="b2602c69:ProjectViewProjectNode" />
+              <item name="mnist" type="462c0819:PsiDirectoryNode" />
+              <item name="fashion-mnist" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="mnist" type="b2602c69:ProjectViewProjectNode" />
@@ -126,6 +141,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21390937" />
       <window_info id="Structure" order="1" weight="0.25" />
@@ -170,10 +186,25 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/neural-networks-and-deep-learning/fig/data_1000.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/neural-networks-and-deep-learning/fig/generate_gradient.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/neural-networks-and-deep-learning/fig/mnist_other_features.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/neural-networks-and-deep-learning/fig/mnist_really_bad_images.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/neural-networks-and-deep-learning/fig/backprop_magnitude_nabla.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/neur.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="545">
-          <caret line="155" column="29" selection-start-line="155" selection-start-column="29" selection-end-line="155" selection-end-column="29" />
+        <state relative-caret-position="324">
+          <caret line="142" column="25" lean-forward="true" selection-start-line="142" selection-start-column="25" selection-end-line="142" selection-end-column="25" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
