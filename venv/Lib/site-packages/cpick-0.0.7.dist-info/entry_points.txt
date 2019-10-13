@@ -1,0 +1,3 @@
+[console_scripts]
+cpick = cpick.__main__:main
+
