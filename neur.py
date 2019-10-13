@@ -152,8 +152,8 @@ test_inputs = [np.reshape(x, (784, 1)) for x in X_test]
 test_data = zip(test_inputs, y_test)
 
 
-net = Network([784, 30, 20, 10])
-net.SGD(training_data, 20, 10, 1.5, test_data=test_data)
+net = Network([784, 20, 10])
+net.SGD(training_data, 50, 20, 1.5, test_data=test_data)
 
 
 plt.plot(epoca, test_acc)
