@@ -153,7 +153,7 @@ test_data = zip(test_inputs, y_test)
 
 
 net = Network([784, 30, 10])
-net.SGD(training_data, 100, 10, 0.5, test_data=test_data)
+net.SGD(training_data, 20, 10, 0.5, test_data=test_data)
 
 
 plt.plot(epoca, test_acc)
