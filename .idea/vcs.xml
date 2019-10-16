@@ -3,6 +3,5 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/fashion-mnist" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/neural-networks-and-deep-learning" vcs="Git" />
   </component>
 </project>

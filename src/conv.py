@@ -12,6 +12,7 @@ in detail.  Consult the original text for more details.
 from collections import Counter
 
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +20,7 @@ import theano
 import theano.tensor as T
 
 import network3
-from network3 import sigmoid, tanh, ReLU, Network
+from network3 import sigmoid, ReLU, Network
 from network3 import ConvPoolLayer, FullyConnectedLayer, SoftmaxLayer
 
 training_data, validation_data, test_data = network3.load_data_shared()

@@ -24,6 +24,7 @@ from collections import defaultdict
 # My libraries
 import mnist_loader
 
+
 def main():
     training_data, validation_data, test_data = mnist_loader.load_data()
     # training phase: compute the average darknesses for each digit,

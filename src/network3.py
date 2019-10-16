@@ -30,26 +30,25 @@ versions of Theano.
 
 """
 
+import gzip
+
 #### Libraries
 # Standard library
 import cPickle
-import gzip
-
 # Third-party libraries
 import numpy as np
 import theano
 import theano.tensor as T
+from theano.tensor import shared_randomstreams
 from theano.tensor.nnet import conv
 from theano.tensor.nnet import softmax
-from theano.tensor import shared_randomstreams
 from theano.tensor.signal import downsample
+
 
 # Activation functions for neurons
 def linear(z): return z
 def ReLU(z): return T.maximum(0.0, z)
 from theano.tensor.nnet import sigmoid
-from theano.tensor import tanh
-
 
 #### Constants
 GPU = True

@@ -1,10 +1,12 @@
 import random
 
-import numpy as np
-from src import mnist_loader
-from scipy.special import expit
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.special import expit
+
+from src import mnist_loader
 from utils import mnist_reader as fashion_reader
+
 epoca = []
 train_acc = []
 test_acc = []
@@ -14,16 +16,8 @@ test_acc = []
 class Network(object):
 
     def __init__(self, sizes):
-        """The list ``sizes`` contains the number of neurons in the
-        respective layers of the network.  For example, if the list
-        was [2, 3, 1] then it would be a three-layer network, with the
-        first layer containing 2 neurons, the second layer 3 neurons,
-        and the third layer 1 neuron.  The biases and weights for the
-        network are initialized randomly, using a Gaussian
-        distribution with mean 0, and variance 1.  Note that the first
-        layer is assumed to be an input layer, and by convention we
-        won't set any biases for those neurons, since biases are only
-        ever used in computing the outputs from later layers."""
+        """ sizes is a list with inputs in position 0, number of neurons in positions 1 and 
+            outputs neurons in the last position"""
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
@@ -31,7 +25,7 @@ class Network(object):
                         for x, y in zip(sizes[:-1], sizes[1:])]
 
     def feedforward(self, a):
-        """Return the output of the network if ``a`` is input."""
+        """Return the output of the network."""
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
         return a
@@ -39,13 +33,7 @@ class Network(object):
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             test_data=None):
         """Train the neural network using mini-batch stochastic
-        gradient descent.  The ``training_data`` is a list of tuples
-        ``(x, y)`` representing the training inputs and the desired
-        outputs.  The other non-optional parameters are
-        self-explanatory.  If ``test_data`` is provided then the
-        network will be evaluated against the test data after each
-        epoch, and partial progress printed out.  This is useful for
-        tracking progress, but slows things down substantially."""
+        gradient descent. Evaluate accuracy every 10 epochs"""
         training_data = list(training_data)
         n = len(training_data)
         if test_data:
@@ -58,17 +46,21 @@ class Network(object):
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
             if test_data and j % 10 == 0:
-                print("Epoch {} : {} / {}".format(j,self.evaluate(test_data),n_test));
+                test_accuracy = self.evaluate(test_data)
+                print("Epoch {} : {} / {}".format(j,test_accuracy,n_test));
+                accuracy = self.accuracy(training_data, convert=True)
                 epoca.append(j)
-                test_acc.append(self.evaluate(test_data)/n_test)
+                test_acc.append(test_accuracy/n_test)
+                train_acc.append(accuracy/n)
+                print("Epoch {} : {} / {}".format(j,accuracy,n));
+    
             else:
                 print("Epoch {} complete".format(j))
 
     def update_mini_batch(self, mini_batch, eta):
         """Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
-        The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
-        is the learning rate."""
+        """
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
@@ -81,8 +73,7 @@ class Network(object):
                        for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
-        """Return a tuple ``(nabla_b, nabla_w)`` representing the
-        gradient for the cost function C_x.  ``nabla_b`` and
+        """Return the gradient for the cost function C_x.  ``nabla_b`` and
         ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
         to ``self.biases`` and ``self.weights``."""
         nabla_b = [np.zeros(b.shape) for b in self.biases]
@@ -101,12 +92,7 @@ class Network(object):
             sigmoid_prime(zs[-1])
         nabla_b[-1] = delta
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
-        # Note that the variable l in the loop below is used a little
-        # differently to the notation in Chapter 2 of the book.  Here,
-        # l = 1 means the last layer of neurons, l = 2 is the
-        # second-last layer, and so on.  It's a renumbering of the
-        # scheme in the book, used here to take advantage of the fact
-        # that Python can use negative indices in lists.
+        # backpropagation using l to go backwards from the last element of zs
         for l in range(2, self.num_layers):
             z = zs[-l]
             sp = sigmoid_prime(z)
@@ -128,6 +114,37 @@ class Network(object):
         """Return the vector of partial derivatives \partial C_x /
         \partial a for the output activations."""
         return (output_activations-y)
+    
+    def accuracy(self, data, convert=False):
+        """Return the number of inputs in ``data`` for which the neural
+        network outputs the correct result. The neural network's
+        output is assumed to be the index of whichever neuron in the
+        final layer has the highest activation.
+
+        The flag ``convert`` should be set to False if the data set is
+        validation or test data (the usual case), and to True if the
+        data set is the training data. The need for this flag arises
+        due to differences in the way the results ``y`` are
+        represented in the different data sets.  In particular, it
+        flags whether we need to convert between the different
+        representations.  It may seem strange to use different
+        representations for the different data sets.  Why not use the
+        same representation for all three data sets?  It's done for
+        efficiency reasons -- the program usually evaluates the cost
+        on the training data and the accuracy on other data sets.
+        These are different types of computations, and using different
+        representations speeds things up.  More details on the
+        representations can be found in
+        mnist_loader.load_data_wrapper.
+
+        """
+        if convert:
+            results = [(np.argmax(self.feedforward(x)), np.argmax(y))
+                       for (x, y) in data]
+        else:
+            results = [(np.argmax(self.feedforward(x)), y)
+                        for (x, y) in data]
+        return sum(int(x == y) for (x, y) in results)
 
 #### Miscellaneous functions
 def sigmoid(z):
@@ -153,8 +170,9 @@ test_data = zip(test_inputs, y_test)
 
 
 net = Network([784, 30, 10])
-net.SGD(training_data, 20, 10, 0.5, test_data=test_data)
+net.SGD(training_data, 5000, 60000, 1.5, test_data=test_data)
 
 
 plt.plot(epoca, test_acc)
+plt.plot(epoca, train_acc)
 plt.show()

@@ -1,10 +1,12 @@
 import random
 
-import numpy as np
-from src import mnist_loader
-from scipy.special import expit
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.special import expit
+
+from src import mnist_loader
 from utils import mnist_reader as fashion_reader
+
 epoca = []
 train_acc = []
 test_acc = []
@@ -66,7 +68,7 @@ class Network2(object):
                 print("Cost on training data: {}".format(cost))
             if monitor_training_accuracy:
                 accuracy = self.accuracy(training_data, convert=True)
-                training_accuracy.append(accuracy)
+                training_accuracy.append(accuracy/n)
                 print("Accuracy on training data: {} / {}".format(
                     accuracy, n))
             if monitor_evaluation_cost:
@@ -75,9 +77,10 @@ class Network2(object):
                 print("Cost on evaluation data: {}".format(cost))
             if monitor_evaluation_accuracy:
                 accuracy = self.accuracy(evaluation_data)
-                evaluation_accuracy.append(accuracy)
+                evaluation_accuracy.append(accuracy/n_data)
                 print("Accuracy on evaluation data: {} / {}".format(
                     self.accuracy(evaluation_data), n_data))
+            epoca.append(j)
             print()
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
@@ -249,15 +252,12 @@ test_inputs = [np.reshape(x, (784, 1)) for x in X_test]
 test_data = zip(test_inputs, y_test)
 
 
-
-net = Network2([784, 30, 10])
-test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 20, 10, 0.5, lmbda = 5.0, evaluation_data=test_data, monitor_evaluation_accuracy=True,
-        monitor_evaluation_cost=True, monitor_training_accuracy=True, monitor_training_cost=True)
-
 epoca = []
+net = Network2([784, 30, 10])
+test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 5, 0.5, lmbda = 2.5, evaluation_data=test_data, monitor_evaluation_accuracy=True,
+        monitor_evaluation_cost=False, monitor_training_accuracy=True, monitor_training_cost=False)
 
-plt.plot(epoca, train_acc/60000)
-plt.plot(epoca, train_cost)
-plt.plot(epoca, test_acc/10000)
-plt.plot(epoca, test_cost)
+
+plt.plot(epoca, train_acc)
+plt.plot(epoca, test_acc)
 plt.show()

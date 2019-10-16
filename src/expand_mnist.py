@@ -13,16 +13,16 @@ systems.
 
 from __future__ import print_function
 
-#### Libraries
-
-# Standard library
-import cPickle
 import gzip
 import os.path
 import random
 
+# Standard library
+import cPickle
 # Third-party libraries
 import numpy as np
+
+#### Libraries
 
 print("Expanding the MNIST training set")
 
