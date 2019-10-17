@@ -27,7 +27,7 @@ class Network2(object):
                         for x, y in zip(self.sizes[:-1], self.sizes[1:])] 
         self.mu = 0.9
         self.cost = CrossEntropyCost
-        self.stop = 100
+        self.stop = 30
         self.counter = 0
         self.best_acc = 0.0
         
@@ -163,9 +163,9 @@ class Network2(object):
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
         
-        self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw - vel*w
-                        for w, nw, vel in zip(self.weights, nabla_w, self.v)] 
-        self.v = [self.mu*v + eta*weight for v, weight in zip(self.v, self.weights)]
+        self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw
+                        for w, nw in zip(self.weights, nabla_w)] 
+#        self.v = [self.mu*v + eta*weight for v, weight in zip(self.v, self.weights)]
         
         self.biases = [b-(eta/len(mini_batch))*nb
                        for b, nb in zip(self.biases, nabla_b)]
