@@ -23,6 +23,9 @@ class Network2(object):
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         self.weights = [np.random.randn(y, x)/np.sqrt(x)
                         for x, y in zip(self.sizes[:-1], self.sizes[1:])]
+        self.v = [np.random.randn(y, x) * 0
+                        for x, y in zip(self.sizes[:-1], self.sizes[1:])] 
+        self.mu = 0.9
         self.cost = CrossEntropyCost
         self.stop = 100
         self.counter = 0
@@ -33,8 +36,67 @@ class Network2(object):
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
         return a
-
-    def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, mu = 0.9, evaluation_data=None, validation_data=None, early_stopping=False,
+    def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, evaluation_data=None, validation_data=None,
+            monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
+        """Train the neural network using mini-batch stochastic
+        gradient descent.  The ``training_data`` is a list of tuples
+        ``(x, y)`` representing the training inputs and the desired
+        outputs.  The other non-optional parameters are
+        self-explanatory.  If ``test_data`` is provided then the
+        network will be evaluated against the test data after each
+        epoch, and partial progress printed out.  This is useful for
+        tracking progress, but slows things down substantially."""
+        training_data = list(training_data)
+        if evaluation_data:
+            evaluation_data = list(evaluation_data)
+            n_data = len(evaluation_data)
+        if validation_data:
+            validation_data = list(validation_data)
+            n_val = len(validation_data)
+        n = len(training_data)
+        evaluation_cost, evaluation_accuracy = [], []
+        training_cost, training_accuracy = [], []
+        for j in range(epochs):
+            random.shuffle(training_data)
+            mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
+            for mini_batch in mini_batches:
+                self.update_mini_batch(mini_batch, eta, lmbda, len(training_data))
+            print("Epoch %s training complete" % j)
+            if monitor_training_cost:
+                cost = self.total_cost(training_data, lmbda)
+                training_cost.append(cost)
+                print("Cost on training data: {}".format(cost))
+            if monitor_training_accuracy:
+                accuracy = self.accuracy(training_data, convert=True)
+                training_accuracy.append(accuracy/n)
+                print("Accuracy on training data: {} / {}".format(
+                    accuracy, n))
+            if monitor_evaluation_cost:
+                cost = self.total_cost(evaluation_data, lmbda, convert=True)
+                evaluation_cost.append(cost)
+                print("Cost on evaluation data: {}".format(cost))
+            if monitor_evaluation_accuracy:
+                accuracy = self.accuracy(evaluation_data)
+                evaluation_accuracy.append(accuracy/n_data)
+                print("Accuracy on evaluation data: {} / {}".format(
+                    self.accuracy(evaluation_data), n_data))
+            epoca.append(j)
+            accuracy = self.accuracy(validation_data)
+            print("Accuracy on validation data: {} / {}".format(accuracy, n_val))
+            if accuracy > self.best_acc:
+                self.best_acc = accuracy
+                self.counter = 0
+            else:
+                self.counter += 1
+            if self.counter == self.stop:
+                print("STOOOOOOOOOOOOOP")
+                break
+            print()
+        return evaluation_cost, evaluation_accuracy, \
+            training_cost, training_accuracy
+            
+            
+    def SGD2(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, mu = 0.9, evaluation_data=None, validation_data=None, early_stopping=False,
             monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
         """Train the neural network using mini-batch stochastic
         gradient descent. Evaluate accuracy every 10 epochs"""
@@ -88,7 +150,7 @@ class Network2(object):
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
 
-    def update_mini_batch(self, mini_batch, eta, lmbda, n, mu):
+    def update_mini_batch(self, mini_batch, eta, lmbda, n):
         """Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
         The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
@@ -100,8 +162,11 @@ class Network2(object):
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw
-                        for w, nw in zip(self.weights, nabla_w)] 
+        
+        self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw - vel*w
+                        for w, nw, vel in zip(self.weights, nabla_w, self.v)] 
+        self.v = [self.mu*v + eta*weight for v, weight in zip(self.v, self.weights)]
+        
         self.biases = [b-(eta/len(mini_batch))*nb
                        for b, nb in zip(self.biases, nabla_b)]
         
@@ -260,9 +325,8 @@ validation_data = zip(test_inputs[-5000:], y_test[-5000:])
 
 epoca = []
 net = Network2([784, 30, 10])
-test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 60000, 5, lmbda = 5, evaluation_data=test_data, validation_data=validation_data, early_stopping=True, monitor_evaluation_accuracy=True,
+test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 1000, 0.5, lmbda = 0.05, evaluation_data=test_data, validation_data=validation_data, monitor_evaluation_accuracy=True,
         monitor_evaluation_cost=False, monitor_training_accuracy=True, monitor_training_cost=False)
-
 plt.plot(epoca, train_acc)
 plt.plot(epoca, test_acc)
 plt.show()
