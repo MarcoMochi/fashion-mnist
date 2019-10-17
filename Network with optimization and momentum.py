@@ -16,42 +16,32 @@ test_acc = []
 class Network2(object):
 
     def __init__(self, sizes):
-        """The list ``sizes`` contains the number of neurons in the
-        respective layers of the network.  For example, if the list
-        was [2, 3, 1] then it would be a three-layer network, with the
-        first layer containing 2 neurons, the second layer 3 neurons,
-        and the third layer 1 neuron.  The biases and weights for the
-        network are initialized randomly, using a Gaussian
-        distribution with mean 0, and variance 1.  Note that the first
-        layer is assumed to be an input layer, and by convention we
-        won't set any biases for those neurons, since biases are only
-        ever used in computing the outputs from later layers."""
+        """ sizes is a list with inputs in position 0, number of neurons in positions 1 and 
+            outputs neurons in the last position"""
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         self.weights = [np.random.randn(y, x)/np.sqrt(x)
                         for x, y in zip(self.sizes[:-1], self.sizes[1:])]
         self.cost = CrossEntropyCost
-
+        self.stop = 100
+        self.counter = 0
+        self.best_acc = 0.0
+        
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
         return a
 
-    def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, evaluation_data=None,
+    def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, mu = 0.9, evaluation_data=None, validation_data=None, early_stopping=False,
             monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
         """Train the neural network using mini-batch stochastic
-        gradient descent.  The ``training_data`` is a list of tuples
-        ``(x, y)`` representing the training inputs and the desired
-        outputs.  The other non-optional parameters are
-        self-explanatory.  If ``test_data`` is provided then the
-        network will be evaluated against the test data after each
-        epoch, and partial progress printed out.  This is useful for
-        tracking progress, but slows things down substantially."""
+        gradient descent. Evaluate accuracy every 10 epochs"""
         training_data = list(training_data)
         if evaluation_data:
             evaluation_data = list(evaluation_data)
+            validation_data = list(validation_data)
             n_data = len(evaluation_data)
         n = len(training_data)
         evaluation_cost, evaluation_accuracy = [], []
@@ -60,7 +50,7 @@ class Network2(object):
             random.shuffle(training_data)
             mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
-                self.update_mini_batch(mini_batch, eta, lmbda, len(training_data))
+                self.update_mini_batch(mini_batch, eta, lmbda, len(training_data), mu)
             print("Epoch %s training complete" % j)
             if monitor_training_cost:
                 cost = self.total_cost(training_data, lmbda)
@@ -82,24 +72,39 @@ class Network2(object):
                     self.accuracy(evaluation_data), n_data))
             epoca.append(j)
             print()
+            if early_stopping:
+                accuracy = self.accuracy(validation_data)
+                print("Accuracy on validation data: {} / {}".format(
+                    accuracy, n_data))
+                if accuracy > self.best_acc:
+                    self.best_acc = accuracy
+                    counter = 0
+                else:
+                    counter += 1
+                if counter == self.stop:
+                    print("STOOOOOOOOOOOOOP")
+                    break
+                
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
 
-    def update_mini_batch(self, mini_batch, eta, lmbda, n):
+    def update_mini_batch(self, mini_batch, eta, lmbda, n, mu):
         """Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
         The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
         is the learning rate."""
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
+        
         for x, y in mini_batch:
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
         self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw
-                        for w, nw in zip(self.weights, nabla_w)]
+                        for w, nw in zip(self.weights, nabla_w)] 
         self.biases = [b-(eta/len(mini_batch))*nb
                        for b, nb in zip(self.biases, nabla_b)]
+        
 
     def backprop(self, x, y):
         """Return a tuple ``(nabla_b, nabla_w)`` representing the
@@ -178,6 +183,7 @@ class Network2(object):
         else:
             results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in data]
+        
         return sum(int(x == y) for (x, y) in results)
 
     def total_cost(self, data, lmbda, convert=False):
@@ -240,23 +246,22 @@ def vectorized_result(j):
 
 
 
-training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
 X_train, y_train = fashion_reader.load_mnist("data/fashion", kind="train")
 X_test, y_test = fashion_reader.load_mnist("data/fashion", kind="t10k")
 X_train = X_train / 255
 X_test = X_test / 255
+
 training_inputs = [np.reshape(x, (784, 1)) for x in X_train]
 training_results = [mnist_loader.vectorized_result(y) for y in y_train]
 training_data = zip(training_inputs, training_results)
 test_inputs = [np.reshape(x, (784, 1)) for x in X_test]
-test_data = zip(test_inputs, y_test)
-
+test_data = zip(test_inputs[:5000], y_test[:5000])
+validation_data = zip(test_inputs[-5000:], y_test[-5000:])
 
 epoca = []
 net = Network2([784, 30, 10])
-test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5, 1, 0.5, lmbda = 0.05, evaluation_data=test_data, monitor_evaluation_accuracy=True,
+test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 60000, 5, lmbda = 5, evaluation_data=test_data, validation_data=validation_data, early_stopping=True, monitor_evaluation_accuracy=True,
         monitor_evaluation_cost=False, monitor_training_accuracy=True, monitor_training_cost=False)
-
 
 plt.plot(epoca, train_acc)
 plt.plot(epoca, test_acc)

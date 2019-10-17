@@ -157,7 +157,6 @@ def sigmoid_prime(z):
 
 
 
-training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
 X_train, y_train = fashion_reader.load_mnist("data/fashion", kind="train")
 X_test, y_test = fashion_reader.load_mnist("data/fashion", kind="t10k")
 X_train = X_train / 255
