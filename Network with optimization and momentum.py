@@ -28,25 +28,19 @@ class Network2(object):
                            in zip(self.sizes[:-1], self.sizes[1:])]
         self.mu = 0.9
         self.cost = CrossEntropyCost
-        self.stop = 30
+        self.stop = 100
         self.counter = 0
         self.best_acc = 0.0
         
     def feedforward(self, a):
-        """Return the output of the network if ``a`` is input."""
+        """Return the output of the network."""
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
         return a
     def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, evaluation_data=None, validation_data=None,
             monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
-        """Train the neural network using mini-batch stochastic
-        gradient descent.  The ``training_data`` is a list of tuples
-        ``(x, y)`` representing the training inputs and the desired
-        outputs.  The other non-optional parameters are
-        self-explanatory.  If ``test_data`` is provided then the
-        network will be evaluated against the test data after each
-        epoch, and partial progress printed out.  This is useful for
-        tracking progress, but slows things down substantially."""
+         """Train the neural network using mini-batch stochastic
+        gradient descent. Evaluate accuracy on validation set and check for early stopping"""
         training_data = list(training_data)
         if evaluation_data:
             evaluation_data = list(evaluation_data)
@@ -95,67 +89,12 @@ class Network2(object):
             print()
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
-            
-            
-    def SGD2(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, mu = 0.9, evaluation_data=None, validation_data=None, early_stopping=False,
-            monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
-        """Train the neural network using mini-batch stochastic
-        gradient descent. Evaluate accuracy every 10 epochs"""
-        training_data = list(training_data)
-        if evaluation_data:
-            evaluation_data = list(evaluation_data)
-            validation_data = list(validation_data)
-            n_data = len(evaluation_data)
-        n = len(training_data)
-        evaluation_cost, evaluation_accuracy = [], []
-        training_cost, training_accuracy = [], []
-        for j in range(epochs):
-            random.shuffle(training_data)
-            mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
-            for mini_batch in mini_batches:
-                self.update_mini_batch(mini_batch, eta, lmbda, len(training_data), mu)
-            print("Epoch %s training complete" % j)
-            if monitor_training_cost:
-                cost = self.total_cost(training_data, lmbda)
-                training_cost.append(cost)
-                print("Cost on training data: {}".format(cost))
-            if monitor_training_accuracy:
-                accuracy = self.accuracy(training_data, convert=True)
-                training_accuracy.append(accuracy/n)
-                print("Accuracy on training data: {} / {}".format(
-                    accuracy, n))
-            if monitor_evaluation_cost:
-                cost = self.total_cost(evaluation_data, lmbda, convert=True)
-                evaluation_cost.append(cost)
-                print("Cost on evaluation data: {}".format(cost))
-            if monitor_evaluation_accuracy:
-                accuracy = self.accuracy(evaluation_data)
-                evaluation_accuracy.append(accuracy/n_data)
-                print("Accuracy on evaluation data: {} / {}".format(
-                    self.accuracy(evaluation_data), n_data))
-            epoca.append(j)
-            print()
-            if early_stopping:
-                accuracy = self.accuracy(validation_data)
-                print("Accuracy on validation data: {} / {}".format(
-                    accuracy, n_data))
-                if accuracy > self.best_acc:
-                    self.best_acc = accuracy
-                    counter = 0
-                else:
-                    counter += 1
-                if counter == self.stop:
-                    print("STOOOOOOOOOOOOOP")
-                    break
-                
-        return evaluation_cost, evaluation_accuracy, \
-            training_cost, training_accuracy
 
     def update_mini_batch(self, mini_batch, eta, lmbda, n, mu=0.9):
         """Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
-        The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
-        is the learning rate."""
+        It uses the L2 regularization and momentum 
+        """
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         
@@ -172,8 +111,7 @@ class Network2(object):
         self.biases = [b+v for b, v in zip(self.biases, self.vb)]
 
     def backprop(self, x, y):
-        """Return a tuple ``(nabla_b, nabla_w)`` representing the
-        gradient for the cost function C_x.  ``nabla_b`` and
+        """Return the gradient for the cost function C_x.  ``nabla_b`` and
         ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
         to ``self.biases`` and ``self.weights``."""
         nabla_b = [np.zeros(b.shape) for b in self.biases]
@@ -205,16 +143,7 @@ class Network2(object):
             nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
         return (nabla_b, nabla_w)
 
-    def evaluate(self, test_data):
-        """Return the number of test inputs for which the neural
-        network outputs the correct result. Note that the neural
-        network's output is assumed to be the index of whichever
-        neuron in the final layer has the highest activation."""
-        test_results = [(np.argmax(self.feedforward(x)), y)
-                        for (x, y) in test_data]
-        return sum(int(x == y) for (x, y) in test_results)
-
-    def cost_derivative(self, output_activations, y):
+   def cost_derivative(self, output_activations, y):
         """Return the vector of partial derivatives \partial C_x /
         \partial a for the output activations."""
         return (output_activations-y)
@@ -325,7 +254,7 @@ validation_data = zip(test_inputs[-5000:], y_test[-5000:])
 
 epoca = []
 net = Network2([784, 30, 10])
-test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 20000, 0.5, lmbda = 0.5, evaluation_data=test_data, validation_data=validation_data, monitor_evaluation_accuracy=True,
+test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 60000, 0.05, lmbda = 0.05, evaluation_data=test_data, validation_data=validation_data, monitor_evaluation_accuracy=True,
         monitor_evaluation_cost=False, monitor_training_accuracy=True, monitor_training_cost=False)
 plt.plot(epoca, train_acc)
 plt.plot(epoca, test_acc)
