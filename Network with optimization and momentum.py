@@ -325,7 +325,7 @@ validation_data = zip(test_inputs[-5000:], y_test[-5000:])
 
 epoca = []
 net = Network2([784, 30, 10])
-test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 1000, 0.5, lmbda = 0.05, evaluation_data=test_data, validation_data=validation_data, monitor_evaluation_accuracy=True,
+test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 20000, 0.5, lmbda = 0.5, evaluation_data=test_data, validation_data=validation_data, monitor_evaluation_accuracy=True,
         monitor_evaluation_cost=False, monitor_training_accuracy=True, monitor_training_cost=False)
 plt.plot(epoca, train_acc)
 plt.plot(epoca, test_acc)
