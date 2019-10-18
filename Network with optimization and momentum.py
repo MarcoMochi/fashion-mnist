@@ -23,8 +23,9 @@ class Network2(object):
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         self.weights = [np.random.randn(y, x)/np.sqrt(x)
                         for x, y in zip(self.sizes[:-1], self.sizes[1:])]
-        self.v = [np.random.randn(y, x) * 0
-                        for x, y in zip(self.sizes[:-1], self.sizes[1:])] 
+        self.vb = [np.zeros([y, 1]) for y in self.sizes[1:]]
+        self.vw = [np.zeros([y, x]) for x, y
+                           in zip(self.sizes[:-1], self.sizes[1:])]
         self.mu = 0.9
         self.cost = CrossEntropyCost
         self.stop = 30
@@ -150,7 +151,7 @@ class Network2(object):
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
 
-    def update_mini_batch(self, mini_batch, eta, lmbda, n):
+    def update_mini_batch(self, mini_batch, eta, lmbda, n, mu=0.9):
         """Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
         The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
@@ -163,13 +164,12 @@ class Network2(object):
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
         
-        self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw
-                        for w, nw in zip(self.weights, nabla_w)] 
-#        self.v = [self.mu*v + eta*weight for v, weight in zip(self.v, self.weights)]
-        
-        self.biases = [b-(eta/len(mini_batch))*nb
-                       for b, nb in zip(self.biases, nabla_b)]
-        
+        self.vw = [mu*v-eta*(lmbda/n)*w-(eta/len(mini_batch))*nw
+                   for v, w, nw in zip(self.vw, self.weights, nabla_w)]
+        self.weights = [w+v for w, v in zip(self.weights, self.vw)]
+        self.vb = [mu*v-(eta/len(mini_batch))*nb
+                   for v, nb in zip(self.vb, nabla_b)]
+        self.biases = [b+v for b, v in zip(self.biases, self.vb)]
 
     def backprop(self, x, y):
         """Return a tuple ``(nabla_b, nabla_w)`` representing the
