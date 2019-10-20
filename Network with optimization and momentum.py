@@ -37,10 +37,12 @@ class Network2(object):
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
         return a
+    
     def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, evaluation_data=None, validation_data=None,
-            monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
+            monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False,monitor_training_accuracy=False):
          """Train the neural network using mini-batch stochastic
         gradient descent. Evaluate accuracy on validation set and check for early stopping"""
+        
         training_data = list(training_data)
         if evaluation_data:
             evaluation_data = list(evaluation_data)
@@ -254,7 +256,7 @@ validation_data = zip(test_inputs[-5000:], y_test[-5000:])
 
 epoca = []
 net = Network2([784, 30, 10])
-test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 60000, 0.05, lmbda = 0.05, evaluation_data=test_data, validation_data=validation_data, monitor_evaluation_accuracy=True,
+test_cost, test_acc, train_cost, train_acc = net.SGD(training_data, 5000, 5000, 0.05, lmbda = 0.05, evaluation_data=test_data, validation_data=validation_data, monitor_evaluation_accuracy=True,
         monitor_evaluation_cost=False, monitor_training_accuracy=True, monitor_training_cost=False)
 plt.plot(epoca, train_acc)
 plt.plot(epoca, test_acc)

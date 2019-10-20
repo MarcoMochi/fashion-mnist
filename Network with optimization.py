@@ -34,7 +34,8 @@ class Network2(object):
     def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, evaluation_data=None,
             monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
          """Train the neural network using mini-batch stochastic
-        gradient descent. Evaluate accuracy every 10 epochs"""
+        gradient descent. Evaluate accuracy every 10 epochs
+        """
         training_data = list(training_data)
         if evaluation_data:
             evaluation_data = list(evaluation_data)
